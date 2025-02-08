@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel Hub Time-Series Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin: 0 auto;
+            margin-bottom: 30px;
+        }
+
+        .time-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            gap: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .time-control input[type="range"] {
+            width: 400px;
+        }
+
+        #currentYear {
+            font-size: 1.2em;
+            font-weight: bold;
+            min-width: 60px;
+            background-color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sentinel Hub Time-Series Map</h1>
+        <div id="map"></div>
+        <div class="time-control">
+            <input type="range" id="timeSlider" min="2015" max="2025" value="2015" step="1">
+            <span id="currentYear">2015</span>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Update the map initialization
+        var map = L.map('map', {
+            center: [0, 0],
+            zoom: 3,
+            minZoom: 2,    // Prevent zooming out too far
+            maxZoom: 18,   // Limit maximum zoom level
+            maxBounds: [   // Optional: Restrict panning to these coordinates
+                [-90, -180], // Southwest corner
+                [90, 180]    // Northeast corner
+            ]
+        });
+
+        // Add Sentinel Hub WMS Layer
+        var sentinelLayer = L.tileLayer.wms('https://services.sentinel-hub.com/ogc/wms/a881cad5-4068-41e6-8f90-4878c015ae25', {
+            layers: 'Sentinel_2015to2025', // Replace with your configured layer name
+            format: 'image/png',
+            transparent: true,
+            attribution: '&copy; Sentinel Hub',
+            time: '2015-01-01' // Default time
+        }).addTo(map);
+
+        // Add OpenStreetMap as a base layer (optional)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Remove play-related code and simplify the time control
+        var timeSlider = document.getElementById('timeSlider');
+        var currentYear = document.getElementById('currentYear');
+
+        function updateMap(year) {
+            sentinelLayer.setParams({ time: year + '-01-01' });
+            currentYear.textContent = year;
+        }
+
+        // Handle slider input
+        timeSlider.addEventListener('input', function () {
+            updateMap(this.value);
+        });
+
+        // Initialize the map with the starting year
+        updateMap(timeSlider.value);
+    </script>
+</body>
+</html>
